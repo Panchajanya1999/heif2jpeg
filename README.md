@@ -24,18 +24,21 @@ Download the latest release for your platform from the [Releases](https://github
 ### Building from Source
 
 1. Clone the repository:
-   ```
+
+   ```bash
    git clone https://github.com/yourusername/heif-converter.git
    cd heif-converter
    ```
 
 2. Install dependencies:
-   ```
+
+   ```bash
    pip install -r requirements.txt
    ```
 
 3. Run the application:
-   ```
+
+   ```bash
    python hif2jpegUI.py
    ```
 
@@ -44,13 +47,15 @@ Download the latest release for your platform from the [Releases](https://github
 ### Setup Development Environment
 
 1. Create a virtual environment:
-   ```
+
+   ```bash
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
 2. Install development dependencies:
-   ```
+
+   ```bash
    pip install -r requirements.txt
    pip install pyinstaller pytest
    ```
@@ -59,7 +64,13 @@ Download the latest release for your platform from the [Releases](https://github
 
 To build the executable locally:
 
+```bash
+pyinstaller heif_converter.spec
 ```
+
+or, you can run the full command with options:
+
+```bash
 pyinstaller --name="HEIF_Converter" --windowed --onefile --add-data="$(pip show sv-ttk | grep Location | cut -d ' ' -f 2)/sv_ttk:sv_ttk" hif2jpegUI.py
 ```
 
@@ -74,7 +85,8 @@ This project uses GitHub Actions for continuous integration and deployment. The 
 #### Automatic Releases
 
 1. To create a new release, use the provided release script:
-   ```
+
+   ```bash
    python release.py --patch --message "Fixed bug in EXIF handling"
    ```
 
@@ -86,7 +98,8 @@ This project uses GitHub Actions for continuous integration and deployment. The 
    - `--message` or `-m`: Release message
 
 2. Push the changes and tag:
-   ```
+
+   ```bash
    git push origin main
    git push origin v1.0.1  # Use the tag shown in the script output
    ```
@@ -101,7 +114,8 @@ This project uses GitHub Actions for continuous integration and deployment. The 
 1. Update the version in `hif2jpegUI.py`
 2. Commit the changes
 3. Create and push a tag starting with 'v' (e.g., v1.0.0):
-   ```
+
+   ```bash
    git tag v1.0.0
    git push origin v1.0.0
    ```
