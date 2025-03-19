@@ -1,5 +1,7 @@
 # HEIF to JPEG Converter
 
+[![Build and Release](https://github.com/Panchajanya1999/heif2jpeg/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/Panchajanya1999/heif2jpeg/actions/workflows/build-and-release.yml)
+
 A modern, user-friendly application to convert HEIF/HEIC images to JPEG format with advanced options.
 
 ## Features
