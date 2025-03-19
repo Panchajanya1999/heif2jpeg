@@ -1,0 +1,117 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*' # This will trigger the workflow when you push a tag that starts with 'v'
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            output_name: HEIF_Converter_Linux
+            artifact_name: heif-converter-linux
+          - os: windows-latest
+            output_name: HEIF_Converter_Windows
+            artifact_name: heif-converter-windows
+          - os: macos-latest
+            output_name: HEIF_Converter_macOS
+            artifact_name: heif-converter-macos
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        cache: 'pip'
+
+    - name: Install system dependencies (Linux)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y tk-dev libheif-dev python3-tk
+
+    - name: Install system dependencies (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew update
+        brew install libheif
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller
+
+    - name: Build with PyInstaller (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        pyinstaller --name=${{ matrix.output_name }} --onefile --noconsole --add-data="$(pip show sv-ttk | grep Location | cut -d ' ' -f 2)/sv_ttk;sv_ttk" hif2jpegUI.py
+      shell: bash
+
+    - name: Build with PyInstaller (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        pyinstaller --name=${{ matrix.output_name }} --onefile --noconsole --add-data="$(pip show sv-ttk | grep Location | cut -d ' ' -f 2)/sv_ttk:sv_ttk" hif2jpegUI.py
+
+    - name: Build with PyInstaller (Linux)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        pyinstaller --name=${{ matrix.output_name }} --onefile --noconsole --add-data="$(pip show sv-ttk | grep Location | cut -d ' ' -f 2)/sv_ttk:sv_ttk" hif2jpegUI.py
+
+    - name: Archive Windows executable 
+      if: matrix.os == 'windows-latest'
+      run: |
+        cd dist
+        powershell Compress-Archive -Path ${{ matrix.output_name }}.exe -DestinationPath ${{ matrix.artifact_name }}.zip
+
+    - name: Archive macOS executable
+      if: matrix.os == 'macos-latest'
+      run: |
+        cd dist
+        zip -r ${{ matrix.artifact_name }}.zip ${{ matrix.output_name }}
+
+    - name: Archive Linux executable
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        cd dist
+        zip -r ${{ matrix.artifact_name }}.zip ${{ matrix.output_name }}
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.artifact_name }}
+        path: dist/${{ matrix.artifact_name }}.zip
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+      
+    - name: Create Release
+      id: create_release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          heif-converter-windows/heif-converter-windows.zip
+          heif-converter-macos/heif-converter-macos.zip
+          heif-converter-linux/heif-converter-linux.zip
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
