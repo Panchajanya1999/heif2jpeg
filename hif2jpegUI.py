@@ -479,7 +479,7 @@ class CustomSwitch(ttk.Checkbutton):
 class HEIFtoJPEGConverterApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("HEIF to JPEG Converter")
+        self.root.title("HEIF to JPEG Converter vv1.0.0")
         self.root.geometry("800x700")
         self.root.minsize(750, 650)
         
